@@ -274,7 +274,7 @@
 <span class="sd">        append *version* to the end of this value as well.</span>
 <span class="sd">    registry : dict or None</span>
 <span class="sd">        A record of the files that are managed by this Pooch. Keys should be</span>
-<span class="sd">        the file names and the values should be their SHA256 hashes. Only files</span>
+<span class="sd">        the file names and the values should be their hashes. Only files</span>
 <span class="sd">        in the registry can be fetched from the local storage. Files in</span>
 <span class="sd">        subdirectories of *path* **must use Unix-style separators** (``&#39;/&#39;``)</span>
 <span class="sd">        even on Windows.</span>
@@ -304,7 +304,7 @@
 <span class="sd">    &gt;&gt;&gt; print(pup.base_url)</span>
 <span class="sd">    http://some.link.com/v0.1/</span>
 <span class="sd">    &gt;&gt;&gt; print(pup.registry)</span>
-<span class="sd">    {&#39;data.txt&#39;: &#39;9081wo2eb2gc0u...&#39;}</span>
+<span class="sd">    {&#39;data.txt&#39;: &#39;sha256:9081wo2eb2gc0u...&#39;}</span>
 <span class="sd">    &gt;&gt;&gt; print(pup.registry_files)</span>
 <span class="sd">    [&#39;data.txt&#39;]</span>
 
@@ -406,7 +406,7 @@
 <span class="sd">        to this URL.</span>
 <span class="sd">    registry : dict or None</span>
 <span class="sd">        A record of the files that are managed by this good boy. Keys should be</span>
-<span class="sd">        the file names and the values should be their SHA256 hashes. Only files</span>
+<span class="sd">        the file names and the values should be their hashes. Only files</span>
 <span class="sd">        in the registry can be fetched from the local storage. Files in</span>
 <span class="sd">        subdirectories of *path* **must use Unix-style separators** (``&#39;/&#39;``)</span>
 <span class="sd">        even on Windows.</span>
@@ -424,10 +424,31 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">base_url</span> <span class="o">=</span> <span class="n">base_url</span>
         <span class="k">if</span> <span class="n">registry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">registry</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">registry</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">registry</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_hash_algs</span><span class="p">(</span><span class="n">registry</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">urls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">urls</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">urls</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Pooch.add_hash_algs"><a class="viewcode-back" href="../../api/generated/pooch.Pooch.html#pooch.Pooch.add_hash_algs">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">add_hash_algs</span><span class="p">(</span><span class="n">registry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add the default hashing alg to the registry that is using old format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        registry</span>
+<span class="sd">            Dictionary with pooch&#39;s data files and their hashes.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result</span>
+<span class="sd">            Dictionary with pooch&#39;s data files and their hashes and algs.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="n">value</span> <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">in</span> <span class="n">value</span> <span class="k">else</span> <span class="s2">&quot;sha256:&quot;</span> <span class="o">+</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span><span class="n">registry</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">abspath</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -561,18 +582,23 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_assert_file_in_registry</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
         <span class="c1"># Create the local data directory if it doesn&#39;t already exist</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">abspath</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">abspath</span><span class="p">))</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">abspath</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">full_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abspath</span> <span class="o">/</span> <span class="n">fname</span>
         <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_url</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
         <span class="n">in_storage</span> <span class="o">=</span> <span class="n">full_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="n">in_storage</span><span class="p">:</span>
             <span class="n">action</span> <span class="o">=</span> <span class="s2">&quot;download&quot;</span>
-        <span class="k">elif</span> <span class="n">in_storage</span> <span class="ow">and</span> <span class="n">file_hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">))</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="p">[</span><span class="n">fname</span><span class="p">]:</span>
-            <span class="n">action</span> <span class="o">=</span> <span class="s2">&quot;update&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">action</span> <span class="o">=</span> <span class="s2">&quot;fetch&quot;</span>
+            <span class="n">hash_alg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hash_algorithm</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+            <span class="n">current_hash</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">hash_alg</span><span class="p">,</span> <span class="n">file_hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">full_path</span><span class="p">),</span> <span class="n">alg</span><span class="o">=</span><span class="n">hash_alg</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">current_hash</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="p">[</span><span class="n">fname</span><span class="p">]:</span>
+                <span class="n">action</span> <span class="o">=</span> <span class="s2">&quot;update&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">action</span> <span class="o">=</span> <span class="s2">&quot;fetch&quot;</span>
 
         <span class="k">if</span> <span class="n">action</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;download&quot;</span><span class="p">,</span> <span class="s2">&quot;update&quot;</span><span class="p">):</span>
             <span class="n">action_word</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">download</span><span class="o">=</span><span class="s2">&quot;Downloading&quot;</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="s2">&quot;Updating&quot;</span><span class="p">)</span>
@@ -656,7 +682,10 @@
 <span class="sd">            If the hashes don&#39;t match.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">tmphash</span> <span class="o">=</span> <span class="n">file_hash</span><span class="p">(</span><span class="n">downloaded</span><span class="p">)</span>
+        <span class="n">registry_hash_alg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hash_algorithm</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">tmphash</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">registry_hash_alg</span><span class="p">,</span> <span class="n">file_hash</span><span class="p">(</span><span class="n">downloaded</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="n">registry_hash_alg</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="n">tmphash</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="p">[</span><span class="n">fname</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Hash of downloaded file &#39;</span><span class="si">{}</span><span class="s2">&#39; doesn&#39;t match the entry in the registry.&quot;</span>
@@ -671,10 +700,11 @@
 
 <span class="sd">        Use this if you are managing many files.</span>
 
-<span class="sd">        Each line of the file should have file name and its SHA256 hash</span>
-<span class="sd">        separate by a space. Only one file per line is allowed. Custom download</span>
-<span class="sd">        URLs for individual files can be specified as a third element on the</span>
-<span class="sd">        line.</span>
+<span class="sd">        Each line of the file should have file name and its hash separated by</span>
+<span class="sd">        a space. Hash can specify checksum algorithm using &quot;alg:hash&quot; format.</span>
+<span class="sd">        In case no algorithm is provided, SHA256 is used by default.</span>
+<span class="sd">        Only one file per line is allowed. Custom download URLs for individual</span>
+<span class="sd">        files can be specified as a third element on the line.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -705,11 +735,13 @@
                     <span class="p">)</span>
                 <span class="k">if</span> <span class="n">elements</span><span class="p">:</span>
                     <span class="n">file_name</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="n">file_sha256</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">file_checksum</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_checksum</span><span class="p">:</span>
+                        <span class="n">file_checksum</span> <span class="o">=</span> <span class="s2">&quot;sha256:&quot;</span> <span class="o">+</span> <span class="n">file_checksum</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
                         <span class="n">file_url</span> <span class="o">=</span> <span class="n">elements</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">urls</span><span class="p">[</span><span class="n">file_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_url</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="p">[</span><span class="n">file_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_sha256</span></div>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="p">[</span><span class="n">file_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_checksum</span></div>
 
 <div class="viewcode-block" id="Pooch.is_available"><a class="viewcode-back" href="../../api/generated/pooch.Pooch.html#pooch.Pooch.is_available">[docs]</a>    <span class="k">def</span> <span class="nf">is_available</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -745,7 +777,25 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">allow_redirects</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">available</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">available</span></div></div>
+        <span class="k">return</span> <span class="n">available</span></div>
+
+<div class="viewcode-block" id="Pooch.hash_algorithm"><a class="viewcode-back" href="../../api/generated/pooch.Pooch.html#pooch.Pooch.hash_algorithm">[docs]</a>    <span class="k">def</span> <span class="nf">hash_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the hash algorithm used to compute the file&#39;s checksum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fname : str</span>
+<span class="sd">            The file name (relative to the *base_url* of the remote data</span>
+<span class="sd">            storage) to fetch from the local storage.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        alg : str</span>
+<span class="sd">            The name of the hashing algorithm.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_file_in_registry</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div></div>
 </pre></div>
 
            </div>
@@ -760,7 +810,7 @@
     <p>
         &copy; Copyright 2018-2020, The Pooch Developers
       <span class="lastupdated">
-        Last updated on Jan 28, 2020.
+        Last updated on Feb 25, 2020.
       </span>
 
     </p>

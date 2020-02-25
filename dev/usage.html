@@ -231,7 +231,7 @@
 interdimensional portals. You want to distribute sample data so that your users can
 easily try out the library by copying and pasting from the docs. You want to have a
 <code class="docutils literal notranslate"><span class="pre">plumbus.datasets</span></code> module that defines functions like <code class="docutils literal notranslate"><span class="pre">fetch_c137()</span></code> that will
-return the data loaded as a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.25.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a> for convenient access.</p>
+return the data loaded as a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.0.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a> for convenient access.</p>
 </div>
 <div class="section" id="assumptions">
 <h2>Assumptions<a class="headerlink" href="#assumptions" title="Permalink to this headline">¶</a></h2>
@@ -317,8 +317,8 @@ OS. You could also provide any other path if you prefer. See the documentation f
 </div>
 <div class="section" id="hashes">
 <h2>Hashes<a class="headerlink" href="#hashes" title="Permalink to this headline">¶</a></h2>
-<p>Pooch uses <a class="reference external" href="https://en.wikipedia.org/wiki/SHA-2">SHA256</a> hashes to check if files
-are up-to-date or possibly corrupted:</p>
+<p>Pooch uses <a class="reference external" href="https://en.wikipedia.org/wiki/SHA-2">SHA256</a> hashes by default to check
+if files are up-to-date or possibly corrupted:</p>
 <ul class="simple">
 <li><p>If a file exists in the local folder, Pooch will check that its hash matches the one
 in the registry. If it doesn’t, we’ll assume that it needs to be updated.</p></li>
@@ -335,6 +335,11 @@ SHA256<span class="o">(</span>data/c137.csv<span class="o">)=</span> baee0894dba
 Python’s <a class="reference external" href="https://docs.python.org/3/library/hashlib.html#module-hashlib" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">hashlib</span></code></a>):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pooch</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">pooch</span><span class="o">.</span><span class="n">file_hash</span><span class="p">(</span><span class="s2">&quot;data/c137.csv&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Alternative hashing algorithms supported by <a class="reference external" href="https://docs.python.org/3/library/hashlib.html#module-hashlib" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">hashlib</span></code></a> can be used if necessary:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pooch</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pooch</span><span class="o">.</span><span class="n">file_hash</span><span class="p">(</span><span class="s2">&quot;data/c137.csv&quot;</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="s2">&quot;sha512&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -706,6 +711,12 @@ to access the <code class="docutils literal notranslate"><span class="pre">regis
 cronen.csv 1upodh2ioduhw9celdjhlfvhksgdwikdgcowjhcwoduchowjg8w
 </pre></div>
 </div>
+<p>A specific hashing algorithm can be enforced, if a checksum for a file is
+prefixed with <code class="docutils literal notranslate"><span class="pre">alg:</span></code>, e.g.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>c137.csv sha1:e32b18dab23935bc091c353b308f724f18edcb5e
+cronen.csv md5:b53c08d3570b82665784cedde591a8b0
+</pre></div>
+</div>
 <p>To make sure the registry file is shipped with your package, include the following in
 your <code class="docutils literal notranslate"><span class="pre">MANIFEST.in</span></code> file:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>include plumbus/registry.txt
@@ -808,7 +819,7 @@ change at all:</p>
     <p>
         &copy; Copyright 2018-2020, The Pooch Developers
       <span class="lastupdated">
-        Last updated on Jan 28, 2020.
+        Last updated on Feb 25, 2020.
       </span>
 
     </p>

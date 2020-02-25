@@ -81,11 +81,23 @@ pooch.Pooch
     
     
     
+    
+    
+    
+    
+        Pooch.add_hash_algs
+    
+    
+    
         Pooch.fetch
     
     
     
         Pooch.get_url
+    
+    
+    
+        Pooch.hash_algorithm
     
     
     
@@ -173,11 +185,23 @@ pooch.Pooch
 
 
 
+
+
+
+
+.. automethod:: Pooch.add_hash_algs
+
+
+
 .. automethod:: Pooch.fetch
 
 
 
 .. automethod:: Pooch.get_url
+
+
+
+.. automethod:: Pooch.hash_algorithm
 
 
 
